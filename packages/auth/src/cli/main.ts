@@ -10,6 +10,10 @@ import { withWebServer } from "./webServer";
 import { maybeLoadDotenv } from "./dotenv";
 import type { WebServerArgs } from "./args";
 import { createUserError } from "../internal/userError";
+import {
+  DEFAULT_WEB_SERVER_REUSE_EXISTING,
+  DEFAULT_WEB_SERVER_TIMEOUT_MS,
+} from "./webServerDefaults";
 
 async function run(argv: string[]): Promise<number> {
   try {
@@ -42,8 +46,9 @@ async function run(argv: string[]): Promise<number> {
                   `Auth config webServer.url is missing and baseURL is not set.`,
                 );
               })(),
-            timeoutMs: loaded.config.webServer.timeoutMs ?? 60_000,
-            reuseExisting: loaded.config.webServer.reuseExisting ?? true,
+            timeoutMs: loaded.config.webServer.timeoutMs ?? DEFAULT_WEB_SERVER_TIMEOUT_MS,
+            reuseExisting:
+              loaded.config.webServer.reuseExisting ?? DEFAULT_WEB_SERVER_REUSE_EXISTING,
           }
         : undefined);
 

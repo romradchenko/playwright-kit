@@ -3,7 +3,10 @@ import type { LaunchOptions, Page } from "playwright";
 export interface AuthWebServerConfig {
   /**
    * Command to start your app/server.
-   * Prefer a single executable + args (avoids shell quoting issues).
+   *
+   * Examples:
+   * - `command: "npm run dev"`
+   * - `command: "npm", args: ["run", "dev"]`
    */
   command: string;
   args?: string[];

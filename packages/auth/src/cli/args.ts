@@ -1,5 +1,10 @@
 import { createUserError } from "../internal/userError";
 
+import {
+  DEFAULT_WEB_SERVER_REUSE_EXISTING,
+  DEFAULT_WEB_SERVER_TIMEOUT_MS,
+} from "./webServerDefaults";
+
 type BrowserName = "chromium" | "firefox" | "webkit";
 
 export interface WebServerArgs {
@@ -70,8 +75,8 @@ function parseWebServerArgs(rest: string[]): WebServerArgs | undefined {
   let command: string | undefined;
   const args: string[] = [];
   let url: string | undefined;
-  let timeoutMs = 60_000;
-  let reuseExisting = true;
+  let timeoutMs = DEFAULT_WEB_SERVER_TIMEOUT_MS;
+  let reuseExisting = DEFAULT_WEB_SERVER_REUSE_EXISTING;
 
   for (let i = 0; i < rest.length; i++) {
     const arg = rest[i];

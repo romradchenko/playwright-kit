@@ -83,14 +83,13 @@ import { defineAuthConfig } from "@playwright-kit/auth";
 export default defineAuthConfig({
   baseURL: process.env.BASE_URL ?? "http://127.0.0.1:3000",
 
-  // Optional: let the CLI start your app and wait until it’s reachable.
+  // Optional: have the CLI start your app and wait until it's reachable.
+  // Use this in CI (or anytime your app isn't already running).
+  // If omitted, the CLI assumes your app is already running at `baseURL`.
   webServer: {
-    command: "npm",
-    args: ["run", "dev"],
+    command: "npm run dev",
     // Optional; defaults to baseURL when omitted.
     // url: "http://127.0.0.1:3000/login",
-    timeoutMs: 120_000,
-    reuseExisting: true,
   },
 
   profiles: {

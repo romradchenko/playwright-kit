@@ -1,0 +1,3 @@
+export const DEFAULT_WEB_SERVER_TIMEOUT_MS = 60_000;
+export const DEFAULT_WEB_SERVER_REUSE_EXISTING = true;
+
