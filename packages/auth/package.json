@@ -1,0 +1,65 @@
+{
+  "name": "@playwright-kit/auth",
+  "version": "0.0.0",
+  "description": "Small, production-ready authentication utilities for Playwright.",
+  "license": "MIT",
+  "sideEffects": false,
+  "bin": {
+    "playwright-kit": "./dist/bin/playwright-kit.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/romradchenko/playwright-kit.git",
+    "directory": "packages/auth"
+  },
+  "bugs": {
+    "url": "https://github.com/romradchenko/playwright-kit/issues"
+  },
+  "homepage": "https://github.com/romradchenko/playwright-kit/tree/main/packages/auth#readme",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": [
+    "playwright",
+    "auth",
+    "e2e",
+    "storageState"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "test": "node --test --import tsx src/__tests__/all.test.ts"
+  },
+  "peerDependencies": {
+    "@playwright/test": ">=1.40.0",
+    "playwright": ">=1.40.0"
+  },
+  "peerDependenciesMeta": {
+    "@playwright/test": {
+      "optional": true
+    }
+  },
+  "dependencies": {
+    "tsx": "^4.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@playwright/test": "^1.40.0",
+    "typescript": "^5.7.3"
+  }
+}
