@@ -1,0 +1,61 @@
+{
+    "$schema": "./node_modules/oxlint/configuration_schema.json",
+    "env": {
+        "browser": true
+    },
+    "plugins": [
+        "eslint",
+        "typescript",
+        "unicorn",
+        "oxc",
+        "react",
+        "react-perf",
+        "nextjs",
+        "import",
+        "jsdoc",
+        "jsx-a11y",
+        "node",
+        "promise",
+        "jest",
+        "vitest"
+    ],
+    "categories": {
+        // "perf": "warn",
+        "restriction": "error"
+        // "suspicious": "error",
+        // "pedantic": "warn",
+        // "style": "warn"
+    },
+    "rules": {
+        "no-undefined": "allow", // too strict
+        "no-plusplus": "allow", // too strict
+        "no-conditional-in-test": "allow", // too strict
+        "require-to-throw-message": "allow", // allow toThrow() without message for generic error tests
+        "no-async-await": "allow", // this is stupid
+        "no-rest-spread-properties": "allow", // this is stupid
+        "no-optional-chaining": "allow", // this is stupid
+        "no-process-env": "allow", // not applicable for nextjs
+        "prefer-tag-over-role": "allow", // this is stupid
+
+        "jsx-filename-extension": ["error", { "extensions": [".tsx"] }],
+        "no-console": ["error", { "allow": ["error", "debug", "log"] }],
+        "no-autofocus": "allow", // this is useful
+        "no-void": ["error", { "allowAsStatement": true }],
+        "array-type": [
+            "error",
+            {
+                "default": "array-simple"
+            }
+        ],
+
+        "explicit-module-boundary-types": "allow", // too strict for now
+        "no-default-export": "allow", // not for nextjs
+        "explicit-function-return-type": [
+            "error",
+            {
+                "allowExpressions": true,
+                "allowFunctionsWithoutTypeParameters": true
+            }
+        ]
+    }
+}

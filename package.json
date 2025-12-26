@@ -14,7 +14,13 @@
   "engines": {
     "node": ">=18"
   },
+  "scripts": {
+    "lint": "oxlint ."
+  },
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "devDependencies": {
+    "oxlint": "^0.16.0"
+  }
 }
