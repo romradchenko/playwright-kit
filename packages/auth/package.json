@@ -1,0 +1,29 @@
+{
+  "name": "@playwright-kit/auth",
+  "version": "0.0.1",
+  "description": "Authentication utilities for Playwright tests",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "playwright",
+    "auth",
+    "authentication",
+    "testing"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "@playwright/test": "^1.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.0.0",
+    "typescript": "^5.0.0"
+  }
+}
