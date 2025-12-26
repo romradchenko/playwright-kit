@@ -19,6 +19,22 @@ test("parseArgs: setup parses flags", () => {
     "--headed",
     "--browser",
     "firefox",
+    "--dotenv",
+    "--web-server-command",
+    "npx",
+    "--web-server-arg",
+    "next",
+    "--web-server-arg",
+    "dev",
+    "--web-server-arg",
+    "-p",
+    "--web-server-arg",
+    "3017",
+    "--web-server-url",
+    "http://127.0.0.1:3017/login",
+    "--web-server-timeout-ms",
+    "120000",
+    "--no-web-server-reuse-existing",
   ]);
   assert.deepEqual(parsed, {
     kind: "setup",
@@ -26,6 +42,14 @@ test("parseArgs: setup parses flags", () => {
     configPath: "playwright.auth.config.ts",
     headed: true,
     browser: "firefox",
+    dotenv: { enabled: true },
+    webServer: {
+      command: "npx",
+      args: ["next", "dev", "-p", "3017"],
+      url: "http://127.0.0.1:3017/login",
+      timeoutMs: 120000,
+      reuseExisting: false,
+    },
   });
 });
 
@@ -38,6 +62,7 @@ test("parseArgs: ensure supports repeated --profile", () => {
     failFast: false,
     headed: false,
     browser: undefined,
+    webServer: undefined,
+    dotenv: undefined,
   });
 });
-

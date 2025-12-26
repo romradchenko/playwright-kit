@@ -1,0 +1,6 @@
+.next/
+.next-admin/
+.auth/
+test-results/
+playwright-report/
+.env

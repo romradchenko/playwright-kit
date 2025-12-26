@@ -11,5 +11,10 @@ export type {
 } from "./config/types";
 
 export { createAuthTest } from "./fixtures/createAuthTest";
-export type { AuthTest, CreateAuthTestOptions } from "./fixtures/createAuthTest";
-
+export { authTest } from "./fixtures/createAuthTest";
+export type {
+  AuthTest,
+  AuthTestOptions,
+  AuthTestWithExpect,
+  CreateAuthTestOptions,
+} from "./fixtures/createAuthTest";

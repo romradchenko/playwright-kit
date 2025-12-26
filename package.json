@@ -18,7 +18,8 @@
     "lint": "oxlint ."
   },
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "examples/*"
   ],
   "devDependencies": {
     "oxlint": "^0.16.0"

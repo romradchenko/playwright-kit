@@ -55,6 +55,35 @@ function assertAuthConfig(config: unknown): asserts config is AuthConfig {
     throw createUserError(`Auth config must define "profiles" as an object.`);
   }
 
+  if (config.webServer !== undefined) {
+    if (!isObject(config.webServer)) {
+      throw createUserError(`Auth config "webServer" must be an object.`);
+    }
+    if (typeof config.webServer.command !== "string" || config.webServer.command.length === 0) {
+      throw createUserError(`Auth config "webServer.command" must be a non-empty string.`);
+    }
+    if (
+      config.webServer.url !== undefined &&
+      (typeof config.webServer.url !== "string" || config.webServer.url.length === 0)
+    ) {
+      throw createUserError(`Auth config "webServer.url" must be a non-empty string.`);
+    }
+    if (
+      config.webServer.url === undefined &&
+      !(typeof config.baseURL === "string" && config.baseURL.length > 0)
+    ) {
+      throw createUserError(
+        `Auth config "webServer.url" is optional, but when omitted you must set root "baseURL".`,
+      );
+    }
+    if (
+      config.webServer.args !== undefined &&
+      !Array.isArray(config.webServer.args)
+    ) {
+      throw createUserError(`Auth config "webServer.args" must be an array of strings.`);
+    }
+  }
+
   if (
     config.browser !== undefined &&
     config.browser !== "chromium" &&

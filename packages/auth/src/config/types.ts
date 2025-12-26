@@ -1,5 +1,21 @@
 import type { LaunchOptions, Page } from "playwright";
 
+export interface AuthWebServerConfig {
+  /**
+   * Command to start your app/server.
+   * Prefer a single executable + args (avoids shell quoting issues).
+   */
+  command: string;
+  args?: string[];
+  /**
+   * URL that becomes reachable when the server is ready (200-499).
+   * Defaults to `baseURL` when omitted.
+   */
+  url?: string;
+  timeoutMs?: number;
+  reuseExisting?: boolean;
+}
+
 export interface AuthCredentials {
   email: string;
   password: string;
@@ -37,6 +53,7 @@ export interface AuthConfig {
   browser?: "chromium" | "firefox" | "webkit";
   launchOptions?: LaunchOptions;
   credentials?: AuthCredentialsResolver;
+  webServer?: AuthWebServerConfig;
   profiles: Record<string, AuthProfileConfig>;
 }
 
@@ -45,4 +62,3 @@ export interface AuthConfigLoadResult {
   configFilePath: string;
   projectRoot: string;
 }
-
