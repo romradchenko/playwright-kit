@@ -35,13 +35,15 @@ function resolveWindowsCommand(command: string): string {
     .filter(Boolean);
 
   const tryResolve = (fullPath: string): string | undefined => {
-    if (fs.existsSync(fullPath)) return fullPath;
+    // If command has no extension, prefer PATHEXT matches even if an extensionless
+    // file exists (e.g. Node installs `npm` + `npm.cmd`, but only `.cmd` is runnable).
     if (!ext) {
       for (const extension of pathext) {
         const candidate = `${fullPath}${extension.toLowerCase()}`;
         if (fs.existsSync(candidate)) return candidate;
       }
     }
+    if (fs.existsSync(fullPath)) return fullPath;
     return undefined;
   };
 
@@ -64,6 +66,13 @@ function resolveWindowsCommand(command: string): string {
 
 function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function quoteCmdArg(value: string): string {
+  // Basic quoting for Windows `cmd.exe`. This is intentionally conservative.
+  if (value.length === 0) return "\"\"";
+  if (!/[ \t"]/g.test(value)) return value;
+  return `"${value.replace(/"/g, "\"\"")}"`;
 }
 
 async function killProcessTree(pid: number): Promise<void> {
@@ -165,9 +174,15 @@ async function waitForUrlOrExit(options: {
   url: string;
   timeoutMs: number;
   child: ReturnType<typeof spawn>;
+  getSpawnError?: () => unknown;
 }): Promise<void> {
   const start = Date.now();
   while (Date.now() - start < options.timeoutMs) {
+    const spawnError = options.getSpawnError?.();
+    if (spawnError) {
+      const message = spawnError instanceof Error ? spawnError.message : String(spawnError);
+      throw createUserError(`Failed to start web server: ${message}`);
+    }
     if (options.child.exitCode !== null) {
       throw createUserError(
         `Web server exited with code ${options.child.exitCode} before becoming reachable at ${options.url}`,
@@ -198,22 +213,54 @@ export async function withWebServer<T>(
     if (reachable) return fn();
   }
 
-  const useShell = shouldSpawnInShell(webServer.command);
-  const command =
-    !useShell && process.platform === "win32"
-      ? resolveWindowsCommand(webServer.command)
-      : webServer.command;
+  let useShell = shouldSpawnInShell(webServer.command);
+  let command = webServer.command;
+  let forceQuotedCommandLine = false;
+  if (!useShell && process.platform === "win32") {
+    const resolved = resolveWindowsCommand(webServer.command);
+    const ext = path.extname(resolved).toLowerCase();
+    command = resolved;
+    // `.cmd` / `.bat` require `cmd.exe` (shell) to execute reliably.
+    if (ext === ".cmd" || ext === ".bat") {
+      useShell = true;
+      forceQuotedCommandLine = true;
+    }
+  }
 
-  const child = spawn(command, webServer.args, {
-    stdio: "inherit",
-    shell: useShell,
-    env: process.env,
-    detached: process.platform !== "win32",
-    windowsHide: true,
+  const commandForSpawn = forceQuotedCommandLine
+    ? [quoteCmdArg(command), ...webServer.args.map(quoteCmdArg)].join(" ")
+    : command;
+  const argsForSpawn = forceQuotedCommandLine ? [] : webServer.args;
+
+  let child: ReturnType<typeof spawn>;
+  try {
+    child = spawn(commandForSpawn, argsForSpawn, {
+      stdio: "inherit",
+      shell: useShell,
+      env: process.env,
+      detached: process.platform !== "win32",
+      windowsHide: true,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw createUserError(`Failed to start web server: ${message}`);
+  }
+  let spawnError: unknown;
+  child.once("error", (error) => {
+    spawnError = error;
   });
 
   try {
-    await waitForUrlOrExit({ url: webServer.url, timeoutMs: webServer.timeoutMs, child });
+    if (spawnError) {
+      const message = spawnError instanceof Error ? spawnError.message : String(spawnError);
+      throw createUserError(`Failed to start web server: ${message}`);
+    }
+    await waitForUrlOrExit({
+      url: webServer.url,
+      timeoutMs: webServer.timeoutMs,
+      child,
+      getSpawnError: () => spawnError,
+    });
     return await fn();
   } finally {
     await killProcessTree(child.pid ?? 0);

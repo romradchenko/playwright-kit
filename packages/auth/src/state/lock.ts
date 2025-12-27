@@ -31,30 +31,43 @@ async function tryAcquireLock(lockPath: string): Promise<fs.FileHandle | undefin
   }
 }
 
+async function acquireLockOrThrow(options: {
+  lockPath: string;
+  profile: string;
+  timeoutMs: number;
+}): Promise<fs.FileHandle> {
+  const start = Date.now();
+
+  // Intentionally polling: this lock is file-system based and must remain
+  // compatible across multiple Node processes.
+  // eslint-disable-next-line no-constant-condition
+  for (;;) {
+    // eslint-disable-next-line no-await-in-loop
+    const handle = await tryAcquireLock(options.lockPath);
+    if (handle) return handle;
+
+    if (Date.now() - start > options.timeoutMs) {
+      throw createUserError(
+        `Timed out waiting for auth lock for profile "${options.profile}" at "${options.lockPath}". ` +
+          `Another "playwright-kit auth" process might be running; if this is stale, delete the lock file.`,
+      );
+    }
+
+    // eslint-disable-next-line no-await-in-loop
+    await sleep(LOCK_POLL_INTERVAL_MS);
+  }
+}
+
 export async function withProfileLock<T>(
   options: { statesDir: string; profile: string; timeoutMs?: number },
   fn: () => Promise<T>,
 ): Promise<T> {
   const lockPath = resolveProfileLockPath(options.statesDir, options.profile);
   const timeoutMs = options.timeoutMs ?? DEFAULT_LOCK_TIMEOUT_MS;
-  const start = Date.now();
 
   await fs.mkdir(path.dirname(lockPath), { recursive: true });
 
-  let handle: fs.FileHandle | undefined;
-  while (!handle) {
-    // eslint-disable-next-line no-await-in-loop
-    handle = await tryAcquireLock(lockPath);
-    if (handle) break;
-    if (Date.now() - start > timeoutMs) {
-      throw createUserError(
-        `Timed out waiting for auth lock for profile "${options.profile}" at "${lockPath}". ` +
-          `Another "playwright-kit auth" process might be running; if this is stale, delete the lock file.`,
-      );
-    }
-    // eslint-disable-next-line no-await-in-loop
-    await sleep(LOCK_POLL_INTERVAL_MS);
-  }
+  const handle = await acquireLockOrThrow({ lockPath, profile: options.profile, timeoutMs });
 
   try {
     return await fn();
@@ -63,4 +76,3 @@ export async function withProfileLock<T>(
     await fs.rm(lockPath, { force: true }).catch(() => undefined);
   }
 }
-
