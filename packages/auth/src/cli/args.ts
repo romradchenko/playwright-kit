@@ -91,6 +91,29 @@ function takeInt(argv: string[], index: number, flag: string): number {
   return parsePositiveInt(flag, raw);
 }
 
+function getWebServerArgConsumeCount(arg: string): 0 | 1 | undefined {
+  if (
+    arg === "--web-server-reuse-existing" ||
+    arg === "--no-web-server-reuse-existing"
+  ) {
+    return 0;
+  }
+
+  const flagsWithValues = [
+    "--web-server-command",
+    "--web-server-arg",
+    "--web-server-url",
+    "--web-server-timeout-ms",
+  ] as const;
+
+  for (const flag of flagsWithValues) {
+    if (arg === flag) return 1;
+    if (arg.startsWith(`${flag}=`)) return 0;
+  }
+
+  return undefined;
+}
+
 function parseWebServerArgs(rest: string[]): WebServerArgs | undefined {
   let command: string | undefined;
   const args: string[] = [];
@@ -249,22 +272,9 @@ export function parseArgs(argv: string[]): ParsedArgs {
         i++;
         continue;
       }
-      if (
-        arg === "--web-server-command" ||
-        arg === "--web-server-arg" ||
-        arg === "--web-server-url" ||
-        arg === "--web-server-timeout-ms" ||
-        arg === "--web-server-reuse-existing" ||
-        arg === "--no-web-server-reuse-existing"
-      ) {
-        if (
-          arg === "--web-server-command" ||
-          arg === "--web-server-arg" ||
-          arg === "--web-server-url" ||
-          arg === "--web-server-timeout-ms"
-        ) {
-          i++;
-        }
+      const consumeWebServer = getWebServerArgConsumeCount(arg);
+      if (consumeWebServer !== undefined) {
+        i += consumeWebServer;
         continue;
       }
       throw createUserError(`Unknown argument "${arg}".`);
@@ -355,22 +365,9 @@ export function parseArgs(argv: string[]): ParsedArgs {
         i++;
         continue;
       }
-      if (
-        arg === "--web-server-command" ||
-        arg === "--web-server-arg" ||
-        arg === "--web-server-url" ||
-        arg === "--web-server-timeout-ms" ||
-        arg === "--web-server-reuse-existing" ||
-        arg === "--no-web-server-reuse-existing"
-      ) {
-        if (
-          arg === "--web-server-command" ||
-          arg === "--web-server-arg" ||
-          arg === "--web-server-url" ||
-          arg === "--web-server-timeout-ms"
-        ) {
-          i++;
-        }
+      const consumeWebServer = getWebServerArgConsumeCount(arg);
+      if (consumeWebServer !== undefined) {
+        i += consumeWebServer;
         continue;
       }
       throw createUserError(`Unknown argument "${arg}".`);
