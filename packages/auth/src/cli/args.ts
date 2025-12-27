@@ -46,10 +46,26 @@ function isBrowserName(value: string): value is BrowserName {
   return value === "chromium" || value === "firefox" || value === "webkit";
 }
 
+function takeAttachedValue(arg: string, flag: string): string | undefined {
+  const prefix = `${flag}=`;
+  if (!arg.startsWith(prefix)) return undefined;
+
+  const value = arg.slice(prefix.length);
+  if (!value) {
+    throw createUserError(`Flag "${flag}" expects a value.`);
+  }
+  return value;
+}
+
 function takeValue(argv: string[], index: number, flag: string): string {
   const value = argv[index + 1];
-  if (!value || value.startsWith("-")) {
+  if (!value) {
     throw createUserError(`Flag "${flag}" expects a value.`);
+  }
+  if (value.startsWith("-")) {
+    throw createUserError(
+      `Flag "${flag}" expects a value. If your value starts with "-", pass it as "${flag}=<value>".`,
+    );
   }
   return value;
 }
@@ -62,13 +78,17 @@ function takeAnyValue(argv: string[], index: number, flag: string): string {
   return value;
 }
 
-function takeInt(argv: string[], index: number, flag: string): number {
-  const raw = takeValue(argv, index, flag);
+function parsePositiveInt(flag: string, raw: string): number {
   const value = Number.parseInt(raw, 10);
   if (!Number.isFinite(value) || value <= 0) {
     throw createUserError(`Flag "${flag}" expects a positive integer (got "${raw}").`);
   }
   return value;
+}
+
+function takeInt(argv: string[], index: number, flag: string): number {
+  const raw = takeValue(argv, index, flag);
+  return parsePositiveInt(flag, raw);
 }
 
 function parseWebServerArgs(rest: string[]): WebServerArgs | undefined {
@@ -80,20 +100,48 @@ function parseWebServerArgs(rest: string[]): WebServerArgs | undefined {
 
   for (let i = 0; i < rest.length; i++) {
     const arg = rest[i];
+    {
+      const value = takeAttachedValue(arg, "--web-server-command");
+      if (value !== undefined) {
+        command = value;
+        continue;
+      }
+    }
     if (arg === "--web-server-command") {
       command = takeValue(rest, i, arg);
       i++;
       continue;
+    }
+    {
+      const value = takeAttachedValue(arg, "--web-server-arg");
+      if (value !== undefined) {
+        args.push(value);
+        continue;
+      }
     }
     if (arg === "--web-server-arg") {
       args.push(takeAnyValue(rest, i, arg));
       i++;
       continue;
     }
+    {
+      const value = takeAttachedValue(arg, "--web-server-url");
+      if (value !== undefined) {
+        url = value;
+        continue;
+      }
+    }
     if (arg === "--web-server-url") {
       url = takeValue(rest, i, arg);
       i++;
       continue;
+    }
+    {
+      const value = takeAttachedValue(arg, "--web-server-timeout-ms");
+      if (value !== undefined) {
+        timeoutMs = parsePositiveInt("--web-server-timeout-ms", value);
+        continue;
+      }
     }
     if (arg === "--web-server-timeout-ms") {
       timeoutMs = takeInt(rest, i, arg);
@@ -138,10 +186,24 @@ export function parseArgs(argv: string[]): ParsedArgs {
 
     for (let i = 0; i < rest.length; i++) {
       const arg = rest[i];
+      {
+        const value = takeAttachedValue(arg, "--profile");
+        if (value !== undefined) {
+          profile = value;
+          continue;
+        }
+      }
       if (arg === "--profile") {
         profile = takeValue(rest, i, arg);
         i++;
         continue;
+      }
+      {
+        const value = takeAttachedValue(arg, "--config");
+        if (value !== undefined) {
+          configPath = value;
+          continue;
+        }
       }
       if (arg === "--config") {
         configPath = takeValue(rest, i, arg);
@@ -151,6 +213,16 @@ export function parseArgs(argv: string[]): ParsedArgs {
       if (arg === "--headed") {
         headed = true;
         continue;
+      }
+      {
+        const value = takeAttachedValue(arg, "--browser");
+        if (value !== undefined) {
+          if (!isBrowserName(value)) {
+            throw createUserError(`Invalid --browser value "${value}".`);
+          }
+          browser = value;
+          continue;
+        }
       }
       if (arg === "--browser") {
         const value = takeValue(rest, i, arg);
@@ -164,6 +236,13 @@ export function parseArgs(argv: string[]): ParsedArgs {
       if (arg === "--dotenv") {
         dotenv = { enabled: true };
         continue;
+      }
+      {
+        const value = takeAttachedValue(arg, "--dotenv-path");
+        if (value !== undefined) {
+          dotenv = { enabled: true, path: value };
+          continue;
+        }
       }
       if (arg === "--dotenv-path") {
         dotenv = { enabled: true, path: takeValue(rest, i, arg) };
@@ -209,10 +288,24 @@ export function parseArgs(argv: string[]): ParsedArgs {
 
     for (let i = 0; i < rest.length; i++) {
       const arg = rest[i];
+      {
+        const value = takeAttachedValue(arg, "--profile");
+        if (value !== undefined) {
+          profiles.push(value);
+          continue;
+        }
+      }
       if (arg === "--profile") {
         profiles.push(takeValue(rest, i, arg));
         i++;
         continue;
+      }
+      {
+        const value = takeAttachedValue(arg, "--config");
+        if (value !== undefined) {
+          configPath = value;
+          continue;
+        }
       }
       if (arg === "--config") {
         configPath = takeValue(rest, i, arg);
@@ -227,6 +320,16 @@ export function parseArgs(argv: string[]): ParsedArgs {
         headed = true;
         continue;
       }
+      {
+        const value = takeAttachedValue(arg, "--browser");
+        if (value !== undefined) {
+          if (!isBrowserName(value)) {
+            throw createUserError(`Invalid --browser value "${value}".`);
+          }
+          browser = value;
+          continue;
+        }
+      }
       if (arg === "--browser") {
         const value = takeValue(rest, i, arg);
         if (!isBrowserName(value)) {
@@ -239,6 +342,13 @@ export function parseArgs(argv: string[]): ParsedArgs {
       if (arg === "--dotenv") {
         dotenv = { enabled: true };
         continue;
+      }
+      {
+        const value = takeAttachedValue(arg, "--dotenv-path");
+        if (value !== undefined) {
+          dotenv = { enabled: true, path: value };
+          continue;
+        }
       }
       if (arg === "--dotenv-path") {
         dotenv = { enabled: true, path: takeValue(rest, i, arg) };

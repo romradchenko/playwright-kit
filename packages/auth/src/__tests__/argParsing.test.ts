@@ -66,3 +66,22 @@ test("parseArgs: ensure supports repeated --profile", () => {
     dotenv: undefined,
   });
 });
+
+test("parseArgs: supports --flag=value (including values starting with '-')", () => {
+  const parsed = parseArgs([
+    "auth",
+    "setup",
+    "--profile=admin",
+    "--config=-playwright.auth.config.ts",
+    "--browser=firefox",
+  ]);
+  assert.deepEqual(parsed, {
+    kind: "setup",
+    profile: "admin",
+    configPath: "-playwright.auth.config.ts",
+    headed: false,
+    browser: "firefox",
+    dotenv: undefined,
+    webServer: undefined,
+  });
+});
