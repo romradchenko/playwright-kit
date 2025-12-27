@@ -22,7 +22,12 @@ export default function handler(req: NextApiRequest, res: NextApiResponse) {
   }
 
   const role = isAdmin ? "admin" : "user";
-  setCookie(res, `session=${role}; Path=/; HttpOnly; SameSite=Lax`);
+  let cookie = `session=${role}; Path=/; HttpOnly; SameSite=Lax`;
+  // In production, ensure the session cookie is only sent over HTTPS.
+  if (process.env.NODE_ENV === "production") {
+    cookie += "; Secure";
+  }
+  setCookie(res, cookie);
   res.writeHead(302, { Location: role === "admin" ? "/admin" : "/me" });
   res.end();
 }
