@@ -11,7 +11,8 @@ export function resolveStatesDir(options: {
 }
 
 export function assertSafeProfileNameForFile(profile: string): void {
-  if (!profile || profile.trim() !== profile) {
+  const trimmed = profile.trim();
+  if (trimmed.length === 0 || trimmed !== profile) {
     throw new Error(`Invalid profile name "${profile}".`);
   }
   if (profile.includes("/") || profile.includes("\\") || profile.includes("..")) {
