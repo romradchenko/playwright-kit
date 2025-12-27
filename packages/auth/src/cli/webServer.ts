@@ -16,8 +16,26 @@ async function killProcessTree(pid: number): Promise<void> {
   if (!Number.isFinite(pid) || pid <= 0) return;
 
   if (process.platform === "win32") {
-    const { spawnSync } = await import("node:child_process");
-    spawnSync("taskkill", ["/PID", String(pid), "/T", "/F"], { stdio: "ignore" });
+    await new Promise<void>((resolve) => {
+      const taskkill = spawn("taskkill", ["/PID", String(pid), "/T", "/F"], {
+        stdio: "ignore",
+        windowsHide: true,
+      });
+
+      const timeout = setTimeout(() => {
+        taskkill.kill();
+        resolve();
+      }, 5_000);
+
+      taskkill.on("error", () => {
+        clearTimeout(timeout);
+        resolve();
+      });
+      taskkill.on("exit", () => {
+        clearTimeout(timeout);
+        resolve();
+      });
+    });
     return;
   }
 
