@@ -70,7 +70,13 @@ export async function validateProfileState(options: {
     storageState: statePath,
   });
 
-  await context.tracing.start({ screenshots: true, snapshots: true, sources: false });
+  let tracingStarted = false;
+  try {
+    await context.tracing.start({ screenshots: true, snapshots: true, sources: false });
+    tracingStarted = true;
+  } catch {
+    tracingStarted = false;
+  }
   const page = await context.newPage();
 
   try {
@@ -96,7 +102,9 @@ export async function validateProfileState(options: {
       reason: `${message}\nArtifacts: ${artifacts.screenshotPath}, ${artifacts.tracePath}`,
     };
   } finally {
-    await context.tracing.stop().catch(() => undefined);
+    if (tracingStarted) {
+      await context.tracing.stop().catch(() => undefined);
+    }
     await context.close().catch(() => undefined);
     await browser.close().catch(() => undefined);
   }
