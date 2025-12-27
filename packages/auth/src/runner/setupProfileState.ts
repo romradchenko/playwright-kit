@@ -35,19 +35,25 @@ export async function setupProfileState(options: {
   });
 
   const { chromium, firefox, webkit } = await import("playwright");
-  const browserType =
-    browserName === "firefox"
-      ? firefox
-      : browserName === "webkit"
-        ? webkit
-        : chromium;
+  let browserType = chromium;
+  if (browserName === "firefox") {
+    browserType = firefox;
+  } else if (browserName === "webkit") {
+    browserType = webkit;
+  }
 
   const browser = await browserType.launch(
     mergeLaunchOptions({ config: options.config, profile: options.profile, headed: options.headed }),
   );
 
   const context = await browser.newContext({ baseURL });
-  await context.tracing.start({ screenshots: true, snapshots: true, sources: false });
+  let tracingStarted = false;
+  try {
+    await context.tracing.start({ screenshots: true, snapshots: true, sources: false });
+    tracingStarted = true;
+  } catch {
+    tracingStarted = false;
+  }
   const page = await context.newPage();
 
   try {
@@ -72,14 +78,24 @@ export async function setupProfileState(options: {
       profile: options.profileName,
       runId,
     });
-    const artifacts = await writeFailureArtifacts({ failuresDir, error, page, context });
+    const artifacts = await writeFailureArtifacts({
+      failuresDir,
+      error,
+      page,
+      context: tracingStarted ? context : undefined,
+    });
 
     const message = error instanceof Error ? error.message : String(error);
+    const artifactsMessage = tracingStarted
+      ? `${artifacts.screenshotPath}, ${artifacts.tracePath}`
+      : artifacts.screenshotPath;
     throw new Error(
-      `${message}\nArtifacts: ${artifacts.screenshotPath}, ${artifacts.tracePath}`,
+      `${message}\nArtifacts: ${artifactsMessage}`,
     );
   } finally {
-    await context.tracing.stop().catch(() => undefined);
+    if (tracingStarted) {
+      await context.tracing.stop().catch(() => undefined);
+    }
     await context.close().catch(() => undefined);
     await browser.close().catch(() => undefined);
   }

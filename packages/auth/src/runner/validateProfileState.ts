@@ -42,12 +42,12 @@ export async function validateProfileState(options: {
   const validateUrl = resolveValidateUrl(options.config, options.profile);
 
   const { chromium, firefox, webkit } = await import("playwright");
-  const browserType =
-    browserName === "firefox"
-      ? firefox
-      : browserName === "webkit"
-        ? webkit
-        : chromium;
+  let browserType = chromium;
+  if (browserName === "firefox") {
+    browserType = firefox;
+  } else if (browserName === "webkit") {
+    browserType = webkit;
+  }
 
   const browser = await browserType.launch(
     mergeLaunchOptions({ config: options.config, profile: options.profile, headed: options.headed }),
@@ -82,12 +82,20 @@ export async function validateProfileState(options: {
       profile: options.profileName,
       runId,
     });
-    const artifacts = await writeFailureArtifacts({ failuresDir, error, page, context });
+    const artifacts = await writeFailureArtifacts({
+      failuresDir,
+      error,
+      page,
+      context: tracingStarted ? context : undefined,
+    });
 
     const message = error instanceof Error ? error.message : String(error);
+    const artifactsMessage = tracingStarted
+      ? `${artifacts.screenshotPath}, ${artifacts.tracePath}`
+      : artifacts.screenshotPath;
     return {
       ok: false,
-      reason: `${message}\nArtifacts: ${artifacts.screenshotPath}, ${artifacts.tracePath}`,
+      reason: `${message}\nArtifacts: ${artifactsMessage}`,
     };
   } finally {
     if (tracingStarted) {
