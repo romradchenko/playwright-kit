@@ -76,6 +76,7 @@ web_modules/
 
 # Next.js build output
 .next
+.next-admin
 out
 
 # Playwright artifacts and auth state

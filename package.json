@@ -15,13 +15,21 @@
     "node": ">=18"
   },
   "scripts": {
-    "lint": "oxlint ."
+    "lint": "oxlint .",
+    "build": "npm -w packages/auth run build",
+    "typecheck": "npm run build && npm -w packages/auth run typecheck",
+    "test:unit": "npm -w packages/auth run test",
+    "test:examples": "npm -w examples/next-admin-auth run test && npm -w examples/vite-react-auth run test:e2e",
+    "test": "npm run test:unit && npm run test:examples",
+    "check": "npm run lint && npm run typecheck && npm run test",
+    "prepare": "lefthook install"
   },
   "workspaces": [
     "packages/*",
     "examples/*"
   ],
   "devDependencies": {
+    "lefthook": "^1.12.3",
     "oxlint": "^0.16.0"
   }
 }
