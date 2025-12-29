@@ -5,7 +5,7 @@
     "dev": "next dev -p 3017",
     "build": "next build",
     "start": "next start -p 3017",
-    "auth:ensure": "npm exec playwright-kit -- auth ensure --dotenv",
+    "auth:ensure": "playwright-kit auth ensure --dotenv",
     "pretest": "npm run auth:ensure",
     "test": "playwright test"
   },

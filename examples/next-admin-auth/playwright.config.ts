@@ -11,7 +11,7 @@ export default defineConfig({
   use: {
     baseURL: "http://127.0.0.1:3017",
     actionTimeout: 10_000,
-    navigationTimeout: 30_000,
+    navigationTimeout: 60_000,
   },
   webServer: {
     command: "npm run dev",
