@@ -3,68 +3,39 @@ import path from "node:path";
 
 import { expect as playwrightExpect, test as playwrightTest } from "@playwright/test";
 import type {
-  Expect,
   PlaywrightTestArgs,
   PlaywrightTestOptions,
   PlaywrightWorkerArgs,
   PlaywrightWorkerOptions,
+  TestInfo,
   TestType,
 } from "@playwright/test";
 
-type AnyTestType = TestType<object, object>;
-type AnyExpect = Expect<unknown>;
+type BaseTestArgs = PlaywrightTestArgs & PlaywrightTestOptions;
+type BaseWorkerArgs = PlaywrightWorkerArgs & PlaywrightWorkerOptions;
+type StorageStateOption = PlaywrightTestOptions["storageState"];
 
-type DefaultBaseTest = TestType<
-  PlaywrightTestArgs & PlaywrightTestOptions,
-  PlaywrightWorkerArgs & PlaywrightWorkerOptions
->;
+type DefaultBaseTest = typeof playwrightTest;
 type DefaultExpect = typeof playwrightExpect;
 
-type BaseTestArgs<TBaseTest extends AnyTestType> = TBaseTest extends TestType<infer TArgs, object>
-  ? TArgs
-  : never;
-type BaseWorkerArgs<TBaseTest extends AnyTestType> = TBaseTest extends TestType<object, infer TArgs>
-  ? TArgs
-  : never;
-type StorageStateOption<TBaseTest extends AnyTestType> = BaseTestArgs<TBaseTest> extends {
-  storageState?: infer T;
-}
-  ? T
-  : unknown;
-
-export interface CreateAuthTestOptions<
-  TBaseTest extends AnyTestType = DefaultBaseTest,
-  TBaseExpect extends AnyExpect = DefaultExpect,
-> {
-  statesDir?: string;
-  defaultProfile?: string;
-  baseTest?: TBaseTest;
-  baseExpect?: TBaseExpect;
-}
-
-type PlaywrightTestFn = (...args: unknown[]) => unknown;
-
-type AuthFixtures<TBaseTest extends AnyTestType> = {
+type AuthFixtures = {
   auth: string;
   _authStatePath: string;
-  storageState: StorageStateOption<TBaseTest>;
+  storageState: StorageStateOption;
 };
 
-type AuthWrappedTest<TBaseTest extends AnyTestType> = TestType<
-  BaseTestArgs<TBaseTest> & AuthFixtures<TBaseTest>,
-  BaseWorkerArgs<TBaseTest>
->;
+type AuthTestArgs = BaseTestArgs & BaseWorkerArgs & AuthFixtures;
+export type AuthTestBody = (args: AuthTestArgs, testInfo: TestInfo) => Promise<void> | void;
 
-export type AuthTest<TBaseTest extends AnyTestType = DefaultBaseTest> = AuthWrappedTest<TBaseTest> & {
-  withAuth(profile?: string): AuthWrappedTest<TBaseTest>;
-  auth(profile: string, title: string, fn: PlaywrightTestFn): void;
-  auth(title: string, fn: PlaywrightTestFn): void;
+type AuthWrappedTest = TestType<BaseTestArgs & AuthFixtures, BaseWorkerArgs>;
+
+export type AuthTest = AuthWrappedTest & {
+  withAuth(profile?: string): AuthWrappedTest;
+  auth(profile: string, title: string, fn: AuthTestBody): void;
+  auth(title: string, fn: AuthTestBody): void;
 };
 
-export type AuthTestWithExpect<
-  TBaseTest extends AnyTestType = DefaultBaseTest,
-  TBaseExpect extends AnyExpect = DefaultExpect,
-> = AuthTest<TBaseTest> & { expect: TBaseExpect };
+export type AuthTestWithExpect = AuthTest & { expect: DefaultExpect };
 
 function resolveStatePath(options: { statesDir: string; profile: string }): string {
   const dir = path.isAbsolute(options.statesDir)
@@ -85,43 +56,32 @@ function assertStateFileReadable(statePath: string, profile: string): void {
     JSON.parse(raw);
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      `Invalid auth state JSON for profile "${profile}" at "${statePath}": ${message}`,
-    );
+    throw new Error(`Invalid auth state JSON for profile "${profile}" at "${statePath}": ${message}`);
   }
 }
 
-export interface AuthTestOptions<
-  TBaseTest extends AnyTestType = DefaultBaseTest,
-  TBaseExpect extends AnyExpect = DefaultExpect,
-> {
+export interface AuthTestOptions {
   /** Directory containing `<profile>.json`; default `.auth` relative to `process.cwd()`. */
   statesDir?: string;
   /** Alias for statesDir (kept for ergonomics). */
   stateDir?: string;
   defaultProfile: string;
-  baseTest?: TBaseTest;
-  baseExpect?: TBaseExpect;
+  baseTest?: DefaultBaseTest;
+  baseExpect?: DefaultExpect;
 }
 
-export function authTest<
-  TBaseTest extends AnyTestType = DefaultBaseTest,
-  TBaseExpect extends AnyExpect = DefaultExpect,
->(options: AuthTestOptions<TBaseTest, TBaseExpect>): AuthTestWithExpect<TBaseTest, TBaseExpect> {
-  const baseTest = (options.baseTest ?? (playwrightTest as unknown as TBaseTest)) as TBaseTest;
-  const expect = (options.baseExpect ?? (playwrightExpect as unknown as TBaseExpect)) as TBaseExpect;
+export function authTest(options: AuthTestOptions): AuthTestWithExpect {
+  const baseTest = options.baseTest ?? playwrightTest;
+  const expect = options.baseExpect ?? playwrightExpect;
 
   const statesDir = options.statesDir ?? options.stateDir ?? ".auth";
   const defaultProfile = options.defaultProfile;
 
   const authOption: [string, { option: true }] = [defaultProfile, { option: true }];
 
-  const fixtures = {
+  const testBase = baseTest.extend<AuthFixtures>({
     auth: authOption,
-    _authStatePath: async (
-      { auth }: { auth: string },
-      use: (value: string) => Promise<void>,
-    ) => {
+    _authStatePath: async ({ auth }, use) => {
       if (!auth) {
         throw new Error(
           `No auth profile selected. Set defaultProfile in authTest({ defaultProfile }) or use test.use({ auth: "<profile>" }).`,
@@ -133,67 +93,52 @@ export function authTest<
     },
     // Override Playwright's built-in `storageState` option fixture so role switching
     // composes with existing `test.use({ ...contextOptions })` patterns.
-    storageState: async (
-      { _authStatePath }: { _authStatePath: string },
-      use: (value: StorageStateOption<TBaseTest>) => Promise<void>,
-    ) => {
-      await use(_authStatePath as StorageStateOption<TBaseTest>);
+    storageState: async ({ _authStatePath }, use) => {
+      await use(_authStatePath);
     },
-  } satisfies Parameters<TBaseTest["extend"]>[0];
+  });
 
-  const testBase = baseTest.extend<AuthFixtures<TBaseTest>>(fixtures);
-
-  const withAuth = (profile?: string): AuthWrappedTest<TBaseTest> => {
+  const withAuth = (profile?: string): AuthWrappedTest => {
     const selectedProfile = profile ?? defaultProfile;
     const derived = testBase.extend({});
     derived.use({ auth: selectedProfile });
-    return derived as unknown as AuthWrappedTest<TBaseTest>;
+    return derived;
   };
 
-  const auth: AuthTest<TBaseTest>["auth"] = (
-    a: string,
-    b: string | PlaywrightTestFn,
-    c?: PlaywrightTestFn,
-  ) => {
+  const auth: AuthTest["auth"] = (a: string, b: string | AuthTestBody, c?: AuthTestBody) => {
     if (typeof b === "function") {
       const title = a;
       const fn = b;
-      (testBase as unknown as (title: string, fn: PlaywrightTestFn) => void)(title, fn);
+      testBase(title, fn);
       return;
     }
 
     const profile = a;
     const title = b;
     const fn = c;
-    if (!fn) {
-      throw new Error(`test.auth(profile, title, fn) requires a test function.`);
-    }
+    if (!fn) throw new Error(`test.auth(profile, title, fn) requires a test function.`);
+
     const derived = testBase.extend({});
     derived.use({ auth: profile });
-    (derived as unknown as (title: string, fn: PlaywrightTestFn) => void)(title, fn);
+    derived(title, fn);
   };
 
-  const test = testBase as unknown as AuthTestWithExpect<TBaseTest, TBaseExpect>;
-  test.withAuth = withAuth;
-  test.auth = auth;
-  test.expect = expect;
-  return test;
+  return Object.assign(testBase, { withAuth, auth, expect });
 }
 
-export function createAuthTest<
-  TBaseTest extends AnyTestType = DefaultBaseTest,
-  TBaseExpect extends AnyExpect = DefaultExpect,
->(options: CreateAuthTestOptions<TBaseTest, TBaseExpect> = {}): {
-  test: AuthTest<TBaseTest>;
-  expect: TBaseExpect;
-} {
-  let baseTest = options.baseTest;
-  let baseExpect = options.baseExpect;
+export interface CreateAuthTestOptions {
+  statesDir?: string;
+  defaultProfile?: string;
+  baseTest?: DefaultBaseTest;
+  baseExpect?: DefaultExpect;
+}
 
-  if (!baseTest || !baseExpect) {
-    baseTest = (baseTest ?? (playwrightTest as unknown as TBaseTest)) as TBaseTest;
-    baseExpect = (baseExpect ?? (playwrightExpect as unknown as TBaseExpect)) as TBaseExpect;
-  }
+export function createAuthTest(options: CreateAuthTestOptions = {}): {
+  test: AuthTest;
+  expect: DefaultExpect;
+} {
+  const baseTest = options.baseTest ?? playwrightTest;
+  const baseExpect = options.baseExpect ?? playwrightExpect;
 
   const defaultProfile = options.defaultProfile;
   if (!defaultProfile) {
@@ -209,5 +154,6 @@ export function createAuthTest<
     baseExpect,
   });
 
-  return { test, expect: test.expect as TBaseExpect };
+  return { test, expect: test.expect };
 }
+
