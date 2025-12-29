@@ -1,4 +1,4 @@
-# @playwright-kit/auth
+﻿# @playwright-kit/auth
 
 Infrastructure utilities for managing Playwright `storageState` auth artifacts *before* running tests.
 
@@ -14,7 +14,7 @@ Playwright gives you the low-level primitives:
 - Use: `test.use({ storageState: "state.json" })`
 - Optional: write a custom `globalSetup` to generate states before a run
 
-This package provides the missing “infrastructure layer” many teams end up building themselves:
+This package provides the missing "infrastructure layer" many teams end up building themselves:
 
 - **Multi-profile auth states** (`admin`, `user`, `...`) in one config file
 - **Ensure** workflow: validate existing states and refresh only when missing/invalid
@@ -23,7 +23,7 @@ This package provides the missing “infrastructure layer” many teams end up b
 - **Optional app startup** via `webServer` so `ensure` can be self-contained in CI
 - **Optional `.env` loading** via `--dotenv` to keep scripts copy/paste friendly
 
-The “Native Playwright” section below is intentional: it shows that after generation, auth states are plain Playwright `storageState` files — there’s no runtime magic.
+The "Native Playwright" section below is intentional: it shows that after generation, auth states are plain Playwright `storageState` files - there's no runtime magic.
 
 ## Install
 
@@ -134,7 +134,7 @@ Default mapping is:
 - `AUTH_<PROFILE>_EMAIL`
 - `AUTH_<PROFILE>_PASSWORD`
 
-Where `<PROFILE>` is uppercased and non-alphanumerics become `_` (`qa-admin` → `QA_ADMIN`).
+Where `<PROFILE>` is uppercased and non-alphanumerics become `_` (`qa-admin` -> `QA_ADMIN`).
 
 Examples:
 - `AUTH_ADMIN_EMAIL`, `AUTH_ADMIN_PASSWORD`
@@ -142,7 +142,7 @@ Examples:
 
 ### 3) Add scripts to `package.json`
 
-This keeps tests “pure”: auth refresh happens before Playwright tests run.
+This keeps tests "pure": auth refresh happens before Playwright tests run.
 
 ```json
 {
@@ -284,4 +284,4 @@ Recommended:
 
 - Required when your `login()` / `validate()` needs the app UI (via `baseURL`), but the app is not guaranteed to be running before `playwright-kit auth ensure/setup` (typical in CI).
 - Not needed if the app is already started externally (docker-compose, separate terminal/job) before running the auth CLI.
-- Recommended for CI to avoid “connection refused” and to keep `ensure` self-contained and deterministic.
+- Recommended for CI to avoid "connection refused" and to keep `ensure` self-contained and deterministic.
