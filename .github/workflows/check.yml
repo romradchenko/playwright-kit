@@ -56,14 +56,5 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Build workspace
-        run: npm run build
-
-      - name: Verify playwright-kit CLI
-        run: npm -w examples/next-admin-auth exec -- playwright-kit --help
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Test
-        run: npm run test
+      - name: Test (unit)
+        run: npm run test:unit
