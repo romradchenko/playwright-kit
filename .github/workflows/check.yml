@@ -60,7 +60,7 @@ jobs:
         run: npm run build
 
       - name: Verify playwright-kit CLI
-        run: ./node_modules/.bin/playwright-kit --help
+        run: npm -w examples/next-admin-auth exec -- playwright-kit --help
 
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
