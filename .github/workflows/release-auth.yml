@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  id-token: write
 
 jobs:
   publish:
@@ -19,6 +18,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
+          registry-url: "https://registry.npmjs.org"
 
       - name: Install dependencies
         run: npm ci
@@ -35,7 +35,9 @@ jobs:
           fi
 
       - name: Publish to npm
-        run: npm -w packages/auth publish --provenance --access public
+        run: npm -w packages/auth publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
