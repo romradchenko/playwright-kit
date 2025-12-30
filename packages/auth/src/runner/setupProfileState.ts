@@ -3,6 +3,8 @@ import { resolveProfileCredentials } from "../credentials/resolveCredentials";
 import { resolveFailuresDir, resolveStatePath, resolveStatesDir } from "../state/paths";
 import { writeFileAtomic } from "../state/writeStorageState";
 
+import { chromium, firefox, webkit } from "playwright";
+
 import { createRunId, writeFailureArtifacts } from "./artifacts";
 import { mergeLaunchOptions } from "./mergeLaunchOptions";
 import { resolveBaseURL, resolveValidateUrl } from "./resolveUrls";
@@ -33,7 +35,6 @@ export async function setupProfileState(options: {
     env: options.env,
   });
 
-  const { chromium, firefox, webkit } = await import("playwright");
   let browserType = chromium;
   if (browserName === "firefox") {
     browserType = firefox;

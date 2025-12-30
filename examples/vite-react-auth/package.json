@@ -7,7 +7,6 @@
     "dev": "vite --port 4173",
     "build": "vite build",
     "preview": "vite preview --port 4173",
-    "setup:env": "node -e \"const fs=require('node:fs'); if(!fs.existsSync('.env') && fs.existsSync('.env.example')) fs.copyFileSync('.env.example','.env');\"",
     "auth:ensure": "playwright-kit auth ensure --dotenv",
     "pretest:e2e": "npm run auth:ensure",
     "test:e2e": "playwright test"

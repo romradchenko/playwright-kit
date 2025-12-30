@@ -4,6 +4,8 @@ import type { AuthConfig, AuthProfileConfig } from "../config/types";
 import { resolveFailuresDir, resolveStatePath, resolveStatesDir } from "../state/paths";
 import { readStorageStateJson } from "../state/readStorageState";
 
+import { chromium, firefox, webkit } from "playwright";
+
 import { createRunId, writeFailureArtifacts } from "./artifacts";
 import { mergeLaunchOptions } from "./mergeLaunchOptions";
 import { resolveBaseURL, resolveValidateUrl } from "./resolveUrls";
@@ -41,7 +43,6 @@ export async function validateProfileState(options: {
   const baseURL = resolveBaseURL(options.config, options.profile);
   const validateUrl = resolveValidateUrl(options.config, options.profile);
 
-  const { chromium, firefox, webkit } = await import("playwright");
   let browserType = chromium;
   if (browserName === "firefox") {
     browserType = firefox;

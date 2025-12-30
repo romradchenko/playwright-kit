@@ -44,7 +44,7 @@
   "scripts": {
     "build": "node scripts/rm-dist.mjs && tsc -p tsconfig.build.json",
     "prepack": "npm run build",
-    "typecheck": "tsc -p tsconfig.build.json --noEmit",
+    "typecheck": "tsc -p tsconfig.build.json --noEmit && tsc -p tsconfig.type-tests.json",
     "test": "node --test --import tsx src/__tests__/all.test.ts"
   },
   "peerDependencies": {
@@ -57,6 +57,7 @@
     }
   },
   "dependencies": {
+    "dotenv": "^16.4.7",
     "tsx": "^4.20.0"
   },
   "devDependencies": {

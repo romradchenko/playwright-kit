@@ -15,8 +15,9 @@ You are contributing to an open-source TypeScript project called `playwright-kit
 - Favor clarity over cleverness.
 - Follow Playwright and Node.js best practices.
 - TypeScript `strict` mode (no implicit `any`; prefer `unknown` over `any`).
+- Avoid dynamic import queries (e.g. `typeof import("@playwright/test")["test"]`); prefer explicit `import type { ... }` and build types from them.
+- Avoid `import("...")` / `require("...")` for fixed module specifiers; prefer top-level `import` / `import type` (exception: loading user-provided config files by path/URL).
 - Keep public APIs small and well-documented; avoid breaking changes unless explicitly requested.
 
 ## When uncertain
 - If something is unclear, ask first or leave `TODO:` comments instead of guessing.
-

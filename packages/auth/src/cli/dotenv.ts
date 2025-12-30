@@ -1,4 +1,5 @@
 import path from "node:path";
+import dotenv from "dotenv";
 
 import { createUserError } from "../internal/userError";
 
@@ -8,15 +9,6 @@ export async function maybeLoadDotenv(options: {
   dotenvPath?: string;
 }): Promise<void> {
   if (!options.enabled) return;
-
-  let dotenv: typeof import("dotenv");
-  try {
-    dotenv = (await import("dotenv")) as typeof import("dotenv");
-  } catch {
-    throw createUserError(
-      `--dotenv requires "dotenv" to be installed in your project (npm i -D dotenv).`,
-    );
-  }
 
   const resolvedPath = options.dotenvPath
     ? path.resolve(options.cwd, options.dotenvPath)
