@@ -210,7 +210,8 @@ Or:
 playwright-kit auth ensure --dotenv-path .env.ci
 ```
 
-This requires `dotenv` to be installed in your project (`npm i -D dotenv`).
+Notes:
+- `.env` loading is provided via the `dotenv` package.
 
 ## Using in tests
 

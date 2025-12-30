@@ -9,11 +9,11 @@ playwright-kit auth
 
 Usage:
   playwright-kit auth setup --profile <name> [--config <path>] [--headed] [--browser <chromium|firefox|webkit>]
-  playwright-kit auth ensure [--profile <name> ...] [--config <path>] [--fail-fast] [--headed] [--browser <chromium|firefox|webkit>]
+  playwright-kit auth ensure [--profile <name> ...] [--config <path>] [--headed] [--browser <chromium|firefox|webkit>]
 
 Env (optional):
-  --dotenv                          Load .env from current working directory (requires "dotenv").
-  --dotenv-path <path>              Load env from a specific file path (requires "dotenv").
+  --dotenv                          Load .env from current working directory.
+  --dotenv-path <path>              Load env from a specific file path.
 
 Web server (optional):
   --web-server-command <cmd>         Command to start your app/server (quote if it contains spaces).

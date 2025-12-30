@@ -35,7 +35,6 @@ export type ParsedArgs =
       kind: "ensure";
       profiles?: string[];
       configPath?: string;
-      failFast: boolean;
       headed: boolean;
       browser?: BrowserName;
       webServer?: WebServerArgs;
@@ -290,7 +289,6 @@ export function parseArgs(argv: string[]): ParsedArgs {
   if (command === "ensure") {
     const profiles: string[] = [];
     let configPath: string | undefined;
-    let failFast = false;
     let headed = false;
     let browser: BrowserName | undefined;
     const webServer = parseWebServerArgs(rest);
@@ -320,10 +318,6 @@ export function parseArgs(argv: string[]): ParsedArgs {
       if (arg === "--config") {
         configPath = takeValue(rest, i, arg);
         i++;
-        continue;
-      }
-      if (arg === "--fail-fast") {
-        failFast = true;
         continue;
       }
       if (arg === "--headed") {
@@ -377,7 +371,6 @@ export function parseArgs(argv: string[]): ParsedArgs {
       kind: "ensure",
       profiles: profiles.length > 0 ? profiles : undefined,
       configPath,
-      failFast,
       headed,
       browser,
       webServer,

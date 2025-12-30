@@ -71,7 +71,6 @@ async function run(argv: string[]): Promise<number> {
         loaded,
         profileNames: parsed.profiles,
         headed: parsed.headed,
-        failFast: parsed.failFast,
         browserName: parsed.browser,
         env: process.env,
       }),

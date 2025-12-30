@@ -12,6 +12,10 @@ This repo is a small monorepo of production-ready utilities built on top of Play
   - npm: `https://www.npmjs.com/package/@playwright-kit/auth`
   - Examples: `examples/next-admin-auth`, `examples/vite-react-auth`
 
+## Releasing
+
+See `RELEASING.md`.
+
 ## Auth (@playwright-kit/auth)
 
 Infrastructure utilities for managing Playwright `storageState` auth artifacts *before* running tests.
@@ -224,7 +228,8 @@ Or:
 playwright-kit auth ensure --dotenv-path .env.ci
 ```
 
-This requires `dotenv` to be installed in your project (`npm i -D dotenv`).
+Notes:
+- `.env` loading is provided via the `dotenv` package.
 
 ### Using in tests
 

@@ -59,7 +59,6 @@ test("parseArgs: ensure supports repeated --profile", () => {
     kind: "ensure",
     profiles: ["a", "b"],
     configPath: undefined,
-    failFast: false,
     headed: false,
     browser: undefined,
     webServer: undefined,
