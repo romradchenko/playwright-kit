@@ -15,7 +15,6 @@ type BaseTestArgs = PlaywrightTestArgs & PlaywrightTestOptions;
 type BaseWorkerArgs = PlaywrightWorkerArgs & PlaywrightWorkerOptions;
 type StorageStateOption = PlaywrightTestOptions["storageState"];
 
-type DefaultBaseTest = typeof playwrightTest;
 type DefaultExpect = typeof playwrightExpect;
 
 type AuthFixtures = {
@@ -66,20 +65,15 @@ export interface AuthTestOptions {
   /** Alias for statesDir (kept for ergonomics). */
   stateDir?: string;
   defaultProfile: string;
-  baseTest?: DefaultBaseTest;
-  baseExpect?: DefaultExpect;
 }
 
 export function authTest(options: AuthTestOptions): AuthTestWithExpect {
-  const baseTest = options.baseTest ?? playwrightTest;
-  const expect = options.baseExpect ?? playwrightExpect;
-
   const statesDir = options.statesDir ?? options.stateDir ?? ".auth";
   const defaultProfile = options.defaultProfile;
 
   const authOption: [string, { option: true }] = [defaultProfile, { option: true }];
 
-  const testBase = baseTest.extend<AuthFixtures>({
+  const testBase = playwrightTest.extend<AuthFixtures>({
     auth: authOption,
     _authStatePath: async ({ auth }, use) => {
       if (!auth) {
@@ -123,23 +117,18 @@ export function authTest(options: AuthTestOptions): AuthTestWithExpect {
     derived(title, fn);
   };
 
-  return Object.assign(testBase, { withAuth, auth, expect });
+  return Object.assign(testBase, { withAuth, auth, expect: playwrightExpect });
 }
 
 export interface CreateAuthTestOptions {
   statesDir?: string;
   defaultProfile?: string;
-  baseTest?: DefaultBaseTest;
-  baseExpect?: DefaultExpect;
 }
 
 export function createAuthTest(options: CreateAuthTestOptions = {}): {
   test: AuthTest;
   expect: DefaultExpect;
 } {
-  const baseTest = options.baseTest ?? playwrightTest;
-  const baseExpect = options.baseExpect ?? playwrightExpect;
-
   const defaultProfile = options.defaultProfile;
   if (!defaultProfile) {
     throw new Error(
@@ -150,10 +139,7 @@ export function createAuthTest(options: CreateAuthTestOptions = {}): {
   const test = authTest({
     defaultProfile,
     statesDir: options.statesDir,
-    baseTest,
-    baseExpect,
   });
 
   return { test, expect: test.expect };
 }
-

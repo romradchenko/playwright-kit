@@ -9,7 +9,6 @@ export async function authEnsure(options: {
   loaded: AuthConfigLoadResult;
   profileNames?: string[];
   headed: boolean;
-  failFast: boolean;
   browserName?: "chromium" | "firefox" | "webkit";
   env: NodeJS.ProcessEnv;
   onLog?: (line: string) => void;
@@ -80,7 +79,6 @@ export async function authEnsure(options: {
       const message = error instanceof Error ? error.message : String(error);
       log(`auth ensure: "${profileName}" failed: ${message}`);
       failures.push({ profile: profileName, error });
-      if (options.failFast) break;
     }
   }
 
