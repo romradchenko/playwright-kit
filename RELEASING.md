@@ -4,8 +4,9 @@ This repo is a monorepo. The root package is private; only packages under `packa
 
 ### One-time GitHub setup
 
-1) Create an npm automation token that can publish `@playwright-kit/*`.
-2) Add it to the GitHub repo secrets as `NPM_TOKEN`.
+Set up npm Trusted Publishing (OIDC) for `@playwright-kit/auth` with `release-auth.yml` as the allowed workflow.
+
+This allows publishing from GitHub Actions without storing an npm token in GitHub secrets.
 
 ### Release `@playwright-kit/auth`
 
