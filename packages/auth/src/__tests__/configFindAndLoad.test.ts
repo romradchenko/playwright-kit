@@ -50,7 +50,7 @@ test("loadAuthConfig allows webServer.url to be omitted when baseURL is set", as
     [
       "export default {",
       "  baseURL: 'http://127.0.0.1:3000',",
-      "  webServer: { command: 'node', args: ['server.js'] },",
+      "  webServer: { command: 'node', args: ['server.js'], env: { FOO: 'bar' } },",
       "  profiles: {",
       "    admin: {",
       "      validateUrl: '/',",
@@ -68,6 +68,7 @@ test("loadAuthConfig allows webServer.url to be omitted when baseURL is set", as
   assert.equal(loaded.configFilePath, configPath);
   assert.ok(loaded.config.webServer);
   assert.equal(loaded.config.webServer.command, "node");
+  assert.deepEqual(loaded.config.webServer.env, { FOO: "bar" });
 });
 
 test("loadAuthConfig requires baseURL when webServer.url is omitted", async () => {
@@ -78,6 +79,34 @@ test("loadAuthConfig requires baseURL when webServer.url is omitted", async () =
     [
       "export default {",
       "  webServer: { command: 'node', args: ['server.js'] },",
+      "  profiles: {",
+      "    admin: {",
+      "      validateUrl: '/',",
+      "      async login() {},",
+      "      async validate() { return { ok: true }; },",
+      "    },",
+      "  },",
+      "};",
+      "",
+    ].join("\n"),
+    "utf8",
+  );
+
+  await assert.rejects(
+    () => loadAuthConfig({ cwd: root }),
+    (error) => isUserError(error),
+  );
+});
+
+test("loadAuthConfig rejects non-string webServer.env values", async () => {
+  const root = await makeTempDir();
+  const configPath = path.join(root, "playwright.auth.config.ts");
+  await fs.writeFile(
+    configPath,
+    [
+      "export default {",
+      "  baseURL: 'http://127.0.0.1:3000',",
+      "  webServer: { command: 'node', url: 'http://127.0.0.1:3000', env: { PORT: 3000 } },",
       "  profiles: {",
       "    admin: {",
       "      validateUrl: '/',",

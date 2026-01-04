@@ -17,6 +17,11 @@ export interface AuthWebServerConfig {
   url?: string;
   timeoutMs?: number;
   reuseExisting?: boolean;
+  /**
+   * Extra environment variables for the web server process.
+   * Merged as `{ ...process.env, ...env }`.
+   */
+  env?: Record<string, string>;
 }
 
 export interface AuthCredentials {

@@ -13,6 +13,7 @@ export interface WebServerArgs {
   url: string;
   timeoutMs: number;
   reuseExisting: boolean;
+  env?: Record<string, string>;
 }
 
 export interface DotenvArgs {
