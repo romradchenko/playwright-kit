@@ -231,13 +231,14 @@ export async function withWebServer<T>(
     ? [quoteCmdArg(command), ...webServer.args.map(quoteCmdArg)].join(" ")
     : command;
   const argsForSpawn = forceQuotedCommandLine ? [] : webServer.args;
+  const envForSpawn = webServer.env ? { ...process.env, ...webServer.env } : process.env;
 
   let child: ReturnType<typeof spawn>;
   try {
     child = spawn(commandForSpawn, argsForSpawn, {
       stdio: "inherit",
       shell: useShell,
-      env: process.env,
+      env: envForSpawn,
       detached: process.platform !== "win32",
       windowsHide: true,
     });

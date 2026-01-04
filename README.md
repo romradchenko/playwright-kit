@@ -106,6 +106,8 @@ export default defineAuthConfig({
   // If omitted, the CLI assumes your app is already running at `baseURL`.
   webServer: {
     command: "npm run dev",
+    // Optional: extra env for the server process (merged over process.env).
+    // env: { PORT: "3000" },
     // Optional; defaults to baseURL when omitted.
     // url: "http://127.0.0.1:3000/login",
   },

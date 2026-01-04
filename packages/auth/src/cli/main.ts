@@ -32,25 +32,25 @@ async function run(argv: string[]): Promise<number> {
     const loaded = await loadAuthConfig({ cwd: process.cwd(), configPath: parsed.configPath });
     console.log(`auth: config ${loaded.configFilePath}`);
 
-    const resolvedWebServer: WebServerArgs | undefined =
-      parsed.webServer ??
-      (loaded.config.webServer
-        ? {
-            command: loaded.config.webServer.command,
-            args: loaded.config.webServer.args ?? [],
-            url:
-              loaded.config.webServer.url ??
-              loaded.config.baseURL ??
-              (() => {
-                throw createUserError(
-                  `Auth config webServer.url is missing and baseURL is not set.`,
-                );
-              })(),
-            timeoutMs: loaded.config.webServer.timeoutMs ?? DEFAULT_WEB_SERVER_TIMEOUT_MS,
-            reuseExisting:
-              loaded.config.webServer.reuseExisting ?? DEFAULT_WEB_SERVER_REUSE_EXISTING,
-          }
-        : undefined);
+    const webServerFromConfig: WebServerArgs | undefined = loaded.config.webServer
+      ? {
+          command: loaded.config.webServer.command,
+          args: loaded.config.webServer.args ?? [],
+          url:
+            loaded.config.webServer.url ??
+            loaded.config.baseURL ??
+            (() => {
+              throw createUserError(`Auth config webServer.url is missing and baseURL is not set.`);
+            })(),
+          timeoutMs: loaded.config.webServer.timeoutMs ?? DEFAULT_WEB_SERVER_TIMEOUT_MS,
+          reuseExisting: loaded.config.webServer.reuseExisting ?? DEFAULT_WEB_SERVER_REUSE_EXISTING,
+          env: loaded.config.webServer.env,
+        }
+      : undefined;
+
+    const resolvedWebServer: WebServerArgs | undefined = parsed.webServer
+      ? { ...parsed.webServer, env: parsed.webServer.env ?? webServerFromConfig?.env }
+      : webServerFromConfig;
 
     if (parsed.kind === "setup") {
       const result = await withWebServer(resolvedWebServer, async () =>
