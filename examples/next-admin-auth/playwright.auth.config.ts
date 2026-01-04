@@ -49,8 +49,5 @@ export default defineAuthConfig({
     args: ["next", "dev", "-p", "3017"],
     timeoutMs: 120_000,
     reuseExisting: true,
-    env: {
-      NEXT_TELEMETRY_DISABLED: "1",
-    },
   },
 });

@@ -8,9 +8,6 @@ export default defineAuthConfig({
     url: "http://localhost:4173/login",
     timeoutMs: 60_000,
     reuseExisting: true,
-    env: {
-      PLAYWRIGHT_KIT_EXAMPLE: "vite-react-auth",
-    },
   },
   profiles: {
     admin: {
