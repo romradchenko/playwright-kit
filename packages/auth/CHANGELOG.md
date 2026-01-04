@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.2.1
+
+- Config/CLI: support `webServer.env` (Playwright-style env overrides for the spawned web server process).
+- Examples: `next-admin-auth` loads `.env` via `@next/env` (no `--dotenv` needed).
+
 ## 0.2.0
 
 - Breaking: removed `baseTest` / `baseExpect` options from `authTest()` and `createAuthTest()` to keep types strictly aligned with Playwright’s default `test`.
