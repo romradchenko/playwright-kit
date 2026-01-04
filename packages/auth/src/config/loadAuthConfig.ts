@@ -126,7 +126,9 @@ function assertAuthConfig(config: unknown): asserts config is AuthConfig {
     }
     if (config.webServer.env !== undefined) {
       if (!isObject(config.webServer.env)) {
-        throw createUserError(`Auth config "webServer.env" must be an object of strings.`);
+        throw createUserError(
+          `Auth config "webServer.env" must be an object (key/value pairs) with string values.`,
+        );
       }
       for (const [key, value] of Object.entries(config.webServer.env)) {
         if (typeof value !== "string") {
