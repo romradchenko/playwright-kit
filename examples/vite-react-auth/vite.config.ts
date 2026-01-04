@@ -17,22 +17,6 @@ function headersApi(): PluginOption {
 }
 
 export default defineConfig({
-  plugins: [
-    react(),
-    headersApi(),
-    {
-      name: "env-api",
-      configureServer(server) {
-        server.middlewares.use("/api/env", (_req, res) => {
-          res.setHeader("content-type", "application/json; charset=utf-8");
-          res.end(
-            JSON.stringify({
-              PLAYWRIGHT_KIT_EXAMPLE: process.env.PLAYWRIGHT_KIT_EXAMPLE ?? null,
-            }),
-          );
-        });
-      },
-    },
-  ],
+  plugins: [react(), headersApi()],
 });
 
