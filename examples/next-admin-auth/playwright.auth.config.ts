@@ -1,5 +1,8 @@
 import { defineAuthConfig } from "@playwright-kit/auth";
+import { loadEnvConfig } from "@next/env";
 import type { Page } from "playwright";
+
+loadEnvConfig(process.cwd());
 
 const baseURL = "http://127.0.0.1:3017";
 
